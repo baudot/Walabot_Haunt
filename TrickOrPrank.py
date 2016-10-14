@@ -143,17 +143,13 @@ def wala_start():
 def wala_get_result():
     global state
     valid_targets = 0
-    # print('Target: ')
     try:
         targets = wlbt.GetSensorTargets()
-        # print('...acquired...')
     except wlbt.WalabotError as err:
         print(err)
         return
     if targets:
         for target in targets:
-            # print('Amplitude: ')
-            # print(target.amplitude)
             if (target.amplitude > 0.001):
                 valid_targets += 1
     if (valid_targets > 0):
