@@ -15,6 +15,8 @@ import WalabotAPI as wlbt
 import select, sys
 from subprocess import call
 from enum import Enum
+import RPi.GPIO as GPIO
+import time
 
 class prank_state(Enum):
     no_target = 1
@@ -42,27 +44,73 @@ OUTER_THIRD_RETREAT = R_MAX * 0.69
 INNER_THIRD_APPROACH = R_MAX * 0.30
 INNER_THIRD_RETREAT = R_MAX * 0.36
 
+GPIO.setmode(GPIO.BOARD)
+red_pin = 33
+green_pin = 35
+blue_pin = 37
+GPIO.setup(red_pin, GPIO.OUT)
+GPIO.setup(green_pin, GPIO.OUT)
+GPIO.setup(blue_pin, GPIO.OUT)
+red = GPIO.PWM(red_pin,200)
+green = GPIO.PWM(green_pin,200)
+blue = GPIO.PWM(blue_pin,200)
+
+
 wlbt.Init()
 wlbt.SetSettingsFolder()
 state = prank_state.no_target
+
+def setup_lights():
+    global red_pin, green_pin, blue_pin
+    global red, green, blue
+    red.start(0)
+    green.start(0)
+    blue.start(0)
+
+def pumpkin_flash():
+    global red_pin, green_pin, blue_pin
+    global red, green, blue
+
+    for i in range(100):
+      red.ChangeDutyCycle(i)
+      green.ChangeDutyCycle(i/10)
+      blue.ChangeDutyCycle(0)
+      time.sleep(0.0007)
+    for i in range(100):
+      red.ChangeDutyCycle(100-i)
+      green.ChangeDutyCycle(10 - i/10)
+      blue.ChangeDutyCycle(0)
+      time.sleep(0.0007)
+
+    red.ChangeDutyCycle(0)
+    green.ChangeDutyCycle(0)
+    blue.ChangeDutyCycle(0)
 
 def distance(target):
     return sqrt(target.xPosCm**2 + target.yPosCm**2 + target.zPosCm**2)
 
 def target_appears():
-    call (["omxplayer", "./sounds/target_detected.mp3"])
+    pumpkin_flash()
+    call (["omxplayer", "-o", "both", "./sounds/target_detected.mp3"])
+    pumpkin_flash()
     return True
 
 def target_approaches():
-    call (["omxplayer", "./sounds/target_approaching.mp3"])
+    pumpkin_flash()
+    call (["omxplayer", "-o", "both", "./sounds/target_approaching.mp3"])
+    pumpkin_flash()
     return True
 
 def target_close():
-    call (["omxplayer", "./sounds/target_is_here.mp3"])
+    pumpkin_flash()
+    call (["omxplayer", "-o", "both", "./sounds/target_is_here.mp3"])
+    pumpkin_flash()
     return True
 
 def target_fleeing():
-    call (["omxplayer", "./sounds/target_is_fleeing.mp3"])
+    pumpkin_flash()
+    call (["omxplayer", "-o", "both", "./sounds/target_is_fleeing.mp3"])
+    pumpkin_flash()
     return True
     
 def report_state():
@@ -143,6 +191,7 @@ def wala_start():
 def wala_get_result():
     global state
     valid_targets = 0
+    
     try:
         targets = wlbt.GetSensorTargets()
     except wlbt.WalabotError as err:
@@ -170,6 +219,7 @@ def wala_stop():
     wlbt.Disconnect()
 
 def main():
+	setup_lights()
 	wala_connect()
 	wala_config()
 	wala_start()
@@ -178,6 +228,7 @@ def main():
 	  wlbt.Trigger()
 	  wala_get_result()
 	wala_stop()
+	GPIO.cleanup()
 	return 0
 
 if __name__ == '__main__':
