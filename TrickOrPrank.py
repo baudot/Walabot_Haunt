@@ -25,6 +25,20 @@ class prank_state(Enum):
     target_close = 4
     target_fleeing = 5
 
+'''
+Change the behavior of the pranker by changing these variables:
+R_MIN and R_MAX set the minimum and maximum range the Walabot scans for 
+trick-or-treaters at, in centimeters. Modify these settings to set the 
+range that the pranker starts to taunt trick-or-treaters at.
+
+You can widen the area being scanned by increasing the THETA and PHI 
+variables. 
+
+The bigger you increase the area, the longer each scan takes. With the
+current settings, each scan completes in under a second, which makes the
+pranker fairly responsive.
+'''
+
 R_MIN, R_MAX, R_RES = 20, 300, 8 # walabot SetArenaR parameters
 THETA_MIN, THETA_MAX, THETA_RES = -4, 4, 2 # walabot SetArenaTheta parameters
 PHI_MIN, PHI_MAX, PHI_RES = -4, 4, 2 # walabot SetArenaPhi parametes
@@ -32,6 +46,15 @@ THRESHOLD = 15 # walabot SetThreshold parametes
 MAX_Y_VALUE = R_MAX * cos(radians(THETA_MAX)) * sin(radians(PHI_MAX))
 SENSITIVITY = 0.25 # amount of seconds to wait after a move has been detected
 asked_to_quit = False;
+
+'''
+Change the color of the optional light strip by setting red_brightness,
+green_brightness, and blue_brightness.
+'''
+
+red_brightness = 100
+green_brightness = 10
+blue_brightness = 0
 
 # Distance thresholds to cross to trigger different behaviors.
 # There's two of each to enable hysteresis. 
@@ -44,6 +67,7 @@ OUTER_THIRD_RETREAT = R_MAX * 0.69
 INNER_THIRD_APPROACH = R_MAX * 0.30
 INNER_THIRD_RETREAT = R_MAX * 0.36
 
+# Prepare the red, green and blue pins to fade in and out.
 GPIO.setmode(GPIO.BOARD)
 red_pin = 33
 green_pin = 35
@@ -70,17 +94,18 @@ def setup_lights():
 def pumpkin_flash():
     global red_pin, green_pin, blue_pin
     global red, green, blue
+    global red_brightness, green_brightness, blue_brightness
 
     for i in range(100):
-      red.ChangeDutyCycle(i)
-      green.ChangeDutyCycle(i/10)
-      blue.ChangeDutyCycle(0)
-      time.sleep(0.0007)
+      red.ChangeDutyCycle(i * red_brightness / 100.0)
+      green.ChangeDutyCycle(i * green_brightness / 100.0)
+      blue.ChangeDutyCycle(i * blue_brightness / 100.0)
+      time.sleep(0.001)
     for i in range(100):
-      red.ChangeDutyCycle(100-i)
-      green.ChangeDutyCycle(10 - i/10)
-      blue.ChangeDutyCycle(0)
-      time.sleep(0.0007)
+      red.ChangeDutyCycle(red_brightness - (i * red_brightness / 100.0))
+      green.ChangeDutyCycle(green_brightness - (i * green_brightness / 100.0))
+      blue.ChangeDutyCycle(blue_brightness - (i * blue_brightness / 100.0))
+      time.sleep(0.001)
 
     red.ChangeDutyCycle(0)
     green.ChangeDutyCycle(0)
