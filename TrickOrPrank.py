@@ -120,9 +120,18 @@ def target_appears():
     pumpkin_flash()
     return True
 
-def target_approaches():
+def target_approaches(num_targets):
     pumpkin_flash()
-    call (["omxplayer", "-o", "both", "./sounds/target_approaching.mp3"])
+    if (num_targets == 2):
+        call (["omxplayer", "-o", "both", "./sounds/two_targets_approaching.mp3"])
+    elif (num_targets == 3):     
+        call (["omxplayer", "-o", "both", "./sounds/three_targets_approaching.mp3"])
+    elif (num_targets == 4):     
+        call (["omxplayer", "-o", "both", "./sounds/four_targets_approaching.mp3"])
+    elif (num_targets == 5):     
+        call (["omxplayer", "-o", "both", "./sounds/five_targets_approaching.mp3"])
+    else:
+        call (["omxplayer", "-o", "both", "./sounds/target_approaching.mp3"])
     pumpkin_flash()
     return True
 
@@ -151,7 +160,7 @@ def report_state():
     elif (state == prank_state.target_fleeing):
 		print('Target fleeing')
 
-def react_to_moving_target(nearest_target):
+def react_to_moving_target(nearest_target, num_targets):
     global state
     if (state == prank_state.no_target):
         if (distance(nearest_target) < R_MAX):
@@ -160,7 +169,7 @@ def react_to_moving_target(nearest_target):
     elif (state == prank_state.distant_target):
 		if (distance(nearest_target) < OUTER_THIRD_APPROACH):
 			state = prank_state.target_approaching
-			target_approaches()
+			target_approaches(num_targets)
     elif (state == prank_state.target_approaching):
 		if (distance(nearest_target) > OUTER_THIRD_RETREAT):
 			state = prank_state.target_fleeing
@@ -230,7 +239,7 @@ def wala_get_result():
         nearest_target = min(targets, key=lambda t: distance(t)) 
         report_state()
         # print(distance(nearest_target))
-        react_to_moving_target(nearest_target)
+        react_to_moving_target(nearest_target, valid_targets)
         # Trigger once without checking the results: This avoids double-triggering
         # as a shadow-signal appears behind a signal that has just vanished.
         wlbt.Trigger()
