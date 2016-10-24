@@ -3,7 +3,7 @@
 from subprocess import call
 
 def main():
-	call (["omxplayer", "./sounds/target_is_fleeing.mp3"])
+	call (["omxplayer", "-o", "both", "./sounds/target_detected.mp3"])
 	return 0
 
 if __name__ == '__main__':
