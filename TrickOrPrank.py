@@ -69,8 +69,8 @@ INNER_THIRD_RETREAT = R_MAX * 0.36
 
 # Prepare the red, green and blue pins to fade in and out.
 GPIO.setmode(GPIO.BOARD)
-red_pin = 33
-green_pin = 35
+red_pin = 35
+green_pin = 33
 blue_pin = 37
 GPIO.setup(red_pin, GPIO.OUT)
 GPIO.setup(green_pin, GPIO.OUT)
